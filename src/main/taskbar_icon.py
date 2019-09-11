@@ -7,7 +7,7 @@ import logging
 from PIL import Image
 from pystray import Icon, Menu, MenuItem
 from src.main.spotify_helper import SpotifyHelper, bindings_file
-from ..notifications.notif_handler import send_notif
+from src.notifications.notif_handler import send_notif
 
 logging.basicConfig(filename='../spotify-helper.log', level=logging.INFO,
                     format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
