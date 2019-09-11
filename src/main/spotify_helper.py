@@ -115,7 +115,7 @@ class SpotifyHelper:
         try:
             self.currently_pressed_keys.pop()
 
-        except ValueError:  # Sometimes it's already empty so raises this exception, to be ignored.
+        except IndexError:  # Sometimes it's already empty so raises this exception, to be ignored.
             pass
 
     # Get pynput key from a string - modifier keys are captured in the try statement,
