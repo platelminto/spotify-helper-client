@@ -6,6 +6,7 @@ import configparser
 import uuid
 from ..notifications.notif_handler import send_notif, send_notif_with_web_image
 from ..spotify_api.web_api import WebApi
+from ..errors.exceptions import AlreadyNotifiedException
 
 current_os = platform.system()
 
@@ -295,13 +296,13 @@ class Spotify:
 
         if status_code is 403:
             send_notif('Error', 'Must be premium')
-            return
+            raise AlreadyNotifiedException()
 
         # 'get' with no further method returns information about the user's playback.
         # 204s are usually successes, but in this case it means no active devices exist.
         if status_code is 204 and method == '' and rest_function_name == 'get':
             send_notif('Error', 'No device found')
-            return
+            raise AlreadyNotifiedException()
 
         return response
 
