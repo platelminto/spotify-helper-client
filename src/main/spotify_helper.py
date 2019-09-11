@@ -2,9 +2,13 @@
 import logging
 import sys
 import os
+import threading
+from collections import deque
+from time import sleep
 
 import requests
-from pynput.keyboard import Key, KeyCode, Listener
+from pynput import keyboard
+from pynput.keyboard import Key, KeyCode
 
 
 from src.spotify_api.spotify import Spotify
@@ -24,8 +28,16 @@ class SpotifyHelper:
 
         self.currently_pressed_keys = list()
         self.looking_for = {}
+        self.methods_to_run = deque([])
 
-        with open(bindings_file) as file:
+        self.load_bindings_from_file(bindings_file)
+
+        method_handler_thread = threading.Thread(target=self.check_methods_to_run)
+        method_handler_thread.daemon = True
+        method_handler_thread.start()
+
+    def load_bindings_from_file(self, file):
+        with open(file) as file:
             for line in file:
                 method_and_keycodes = line.split('=')
 
@@ -56,15 +68,27 @@ class SpotifyHelper:
 
                         self.looking_for[keys_tuple].append(method)
 
-    # Get pynput key from a string - modifier keys are captured in the try statement,
-    # while normal letter keys are obtained from the KeyCode.from_char() method.
-    @staticmethod
-    def get_key_from_string(key_str):
-        try:
-            return getattr(Key, key_str)
+    # Runs as a thread, as we don't want operations that might
+    # take long (such as calls to the internet) to block keyboard
+    # listening.
+    def check_methods_to_run(self):
+        while True:
+            if len(self.methods_to_run) > 0:
+                self.run_method(self.methods_to_run.popleft())
+            else:
+                sleep(0.01)
 
-        except AttributeError:
-            return KeyCode.from_char(key_str)
+    def run_method(self, method):
+        try:
+            getattr(self.spotify, method)()
+
+        except ConnectionError:
+            send_notif('Connection Error', 'Internet connection not available')
+        except AlreadyNotifiedException:
+            pass
+        except Exception as e:
+            send_notif('Error', 'Something went wrong')
+            logging.error(str(e) + ':' + str(e.__traceback__))
 
     def on_press(self, key):
         # Keys are unique in each binding, as it makes no sense to have ctrl+ctrl+f5, for example.
@@ -76,16 +100,7 @@ class SpotifyHelper:
         for key_tuple, methods in self.looking_for.items():
             if self.currently_pressed_keys == list(key_tuple):
                 for method in methods:
-                    try:
-                        getattr(self.spotify, method)()
-
-                    except ConnectionError:
-                        send_notif('Connection Error', 'Internet connection not available')
-                    except AlreadyNotifiedException:
-                        pass
-                    except Exception as e:
-                        send_notif('Error', 'Something went wrong')
-                        logging.error(str(e) + ':' + str(e.__traceback__))
+                    self.methods_to_run.append(method)
 
                 # Remove the last element so, to run the same binding again, the user must
                 # repress the last key (to avoid rerunning methods on the same key presses).
@@ -100,5 +115,15 @@ class SpotifyHelper:
 
     # Begins the keyboard listener.
     def run(self):
-        with Listener(on_press=self.on_press, on_release=self.on_release) as listener:
-            listener.join()
+        listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
+        listener.start()
+
+    # Get pynput key from a string - modifier keys are captured in the try statement,
+    # while normal letter keys are obtained from the KeyCode.from_char() method.
+    @staticmethod
+    def get_key_from_string(key_str):
+        try:
+            return getattr(Key, key_str)
+
+        except AttributeError:
+            return KeyCode.from_char(key_str)
