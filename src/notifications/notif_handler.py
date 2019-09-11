@@ -7,7 +7,7 @@ from urllib.request import urlopen, URLError
 
 current_os = platform.system()  # This method returns 'Darwin' for macs.
 
-notif_icon_path = os.path.abspath('../resources/spotify.ico')
+notif_icon_path = os.path.abspath('../resources/spo.png')
 notif_duration_ms = 3750
 
 if current_os == 'Linux':

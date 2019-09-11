@@ -4,13 +4,13 @@ import sys
 import threading
 import time
 import webbrowser
+import subprocess
+import platform
 
 from PIL import Image
 from pystray import Icon, Menu, MenuItem
-from src.main.spotify_helper import *
+from src.main.spotify_helper import SpotifyHelper, bindings_file
 
-# Needed for the program to work from an IDE and from the commandline.
-# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Begins the keyboard listener.
 class SpotifyThread(threading.Thread):
@@ -26,9 +26,15 @@ spotify_thread = SpotifyThread()
 spotify_thread.start()
 
 
-# Opens the bindings file in the default text editor (not in a web browser)
+# Opens the bindings file in the default text editor
 def open_bindings_file():
-    webbrowser.open('../bindings.txt')
+    current_os = platform.system()
+    if current_os == 'Darwin':       # macOS
+        subprocess.call(('open', bindings_file))
+    elif current_os == 'Windows':    # Windows
+        os.startfile(bindings_file)
+    else:                                   # Linux
+        subprocess.call(('xdg-open', bindings_file))
 
 
 if __name__ == "__main__":

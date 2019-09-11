@@ -1,6 +1,7 @@
 # Handles the keyboard listening
 
 import sys
+import os
 
 import traceback
 
@@ -11,7 +12,7 @@ from pynput.keyboard import Key, KeyCode, Listener
 from src.spotify_api.spotify import Spotify
 from src.notifications.notif_handler import send_notif
 
-bindings_file = '../bindings.txt'
+bindings_file = os.path.abspath('../bindings.txt')  # TODO reload bindings after file change
 
 
 class SpotifyHelper:
