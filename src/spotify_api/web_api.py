@@ -1,5 +1,5 @@
 # Handles the authentication and communication with the Spotify Web API.
-
+import logging
 import os
 import shelve
 import sys
@@ -67,7 +67,7 @@ class WebApi:
             response = requests.post(self.register_user_url,
                                      json={'uuid': str(self.uuid)})
             if response.status_code == 200:
-                print('authenticated')
+                logging.info('initial authentication done.')
                 return response.json()
 
             time.sleep(3)
@@ -94,6 +94,7 @@ class WebApi:
             send_notif('Spotify Helper closed', 'Please restart the application and \
                                                 re-authenticate')
             self.get_auth_info()
+            logging.warning('Authentication refresh failed, info: ' + str(info))
             sys.exit(info.get('error_description'))
 
         # If we need additional permissions and have added them to the scope, the
@@ -130,7 +131,7 @@ class WebApi:
         except KeyError:
             self.get_auth_info()
 
-        print('authenticated')
+        logging.info('Authenticated from file')
 
     # The authorization values need to be in a specified header.
     def get_access_header(self):
@@ -144,8 +145,8 @@ class WebApi:
 
         # These codes are error codes.
         if code >= 300:
-            print(code)
-            print(r.json().get('error').get('message'))
+            logging.warning('Request failed with code ' + code)
+            logging.warning('Fail message: ' + r.json().get('error').get('message'))
             if not (code == 403):
                 raise Exception
 

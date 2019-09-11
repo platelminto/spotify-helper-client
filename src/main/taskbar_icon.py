@@ -1,15 +1,18 @@
 # Is the main app, and needs to be the main thread for pystray to work correctly.
 import os
-import sys
 import threading
 import time
-import webbrowser
 import subprocess
 import platform
+import logging
 
 from PIL import Image
 from pystray import Icon, Menu, MenuItem
 from src.main.spotify_helper import SpotifyHelper, bindings_file
+
+
+logging.basicConfig(filename='../spotify-helper.log', level=logging.INFO,
+                    format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 
 # Begins the keyboard listener.

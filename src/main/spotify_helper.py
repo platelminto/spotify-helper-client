@@ -1,9 +1,7 @@
 # Handles the keyboard listening
-
+import logging
 import sys
 import os
-
-import traceback
 
 import requests
 from pynput.keyboard import Key, KeyCode, Listener
@@ -87,8 +85,7 @@ class SpotifyHelper:
                         pass
                     except Exception as e:
                         send_notif('Error', 'Something went wrong')
-                        print(e)
-                        traceback.print_tb(e.__traceback__)
+                        logging.error(str(e) + ':' + str(e.__traceback__))
 
                 # Remove the last element so, to run the same binding again, the user must
                 # repress the last key (to avoid rerunning methods on the same key presses).

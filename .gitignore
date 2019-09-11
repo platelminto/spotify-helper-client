@@ -7,3 +7,4 @@ bin/
 venv
 src/.info*
 src.egg-info/
+src/*.log
