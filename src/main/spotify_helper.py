@@ -108,9 +108,12 @@ class SpotifyHelper:
                 self.has_released_key = False
 
     def on_release(self, key):
+        self.has_released_key = True
+
+        # We ignore the key argument as dead/modified keys (e.g. shift+letter) can
+        # pollute the currently_pressed_keys list.
         try:
-            self.has_released_key = True
-            self.currently_pressed_keys.remove(key)
+            self.currently_pressed_keys.pop()
 
         except ValueError:  # Sometimes it's already empty so raises this exception, to be ignored.
             pass
