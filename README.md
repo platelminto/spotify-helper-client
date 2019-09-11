@@ -13,8 +13,9 @@ To install all the dependencies needed, find the appropriate requirements text f
 
 #### General dependencies
 
-- [Requests](http://docs.python-requests.org/en/master/) - to communicate easily with the Spotify API service.
-- [pynput](https://pythonhosted.org/pynput/) - to read keyboard input regardless of platform.
+- [Requests](http://docs.python-requests.org/en/master/) - to make RESTful requests easily.
+- [pynput](https://pythonhosted.org/pynput/) - for multiplatform keyboard-input parsing.
+- [pystray](https://pypi.org/project/pystray/) - for multiplatform tray-icon creation.
 
 #### Windows-specific dependencies
 
