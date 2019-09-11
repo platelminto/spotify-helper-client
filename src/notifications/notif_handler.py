@@ -15,7 +15,7 @@ if current_os == 'Linux':
 
 if current_os == 'Windows':
     import threading
-    import main.windows_notif as windows_notif
+    from src.notifications import windows_notif
 
 
 def windows_notify(title, text, icon_path, duration):
