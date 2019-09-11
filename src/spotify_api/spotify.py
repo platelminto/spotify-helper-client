@@ -4,16 +4,16 @@ import shelve
 import configparser
 
 import uuid
-from notifications.notif_handler import send_notif, send_notif_with_web_image
-from spotify_api.web_api import WebApi
+from ..notifications.notif_handler import send_notif, send_notif_with_web_image
+from ..spotify_api.web_api import WebApi
 
 current_os = platform.system()
 
 if current_os == 'Darwin':
-    from spotify_api.applescript_api import AppleScriptApi
+    from ..spotify_api.applescript_api import AppleScriptApi
 
 elif current_os == 'Linux':
-    from spotify_api.dbus_api import DBusApi
+    from ..spotify_api.dbus_api import DBusApi
 
 
 def get_device_name():

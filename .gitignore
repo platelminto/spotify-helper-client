@@ -6,3 +6,4 @@ src/**/__pycache__/
 bin/
 venv
 src/.info
+src.egg-info/

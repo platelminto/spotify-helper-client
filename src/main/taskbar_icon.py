@@ -7,9 +7,10 @@ import webbrowser
 
 from PIL import Image
 from pystray import Icon, Menu, MenuItem
+from src.main.spotify_helper import *
 
 # Needed for the program to work from an IDE and from the commandline.
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+# sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Begins the keyboard listener.
 class SpotifyThread(threading.Thread):
@@ -18,7 +19,7 @@ class SpotifyThread(threading.Thread):
         self.daemon = True
 
     def run(self):
-        import main.spotify_helper
+        SpotifyHelper().run()
 
 
 spotify_thread = SpotifyThread()
