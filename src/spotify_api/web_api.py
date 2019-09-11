@@ -9,6 +9,8 @@ import time
 import webbrowser
 import json
 
+from ..notifications.notif_handler import send_notif
+
 
 class WebApi:
 
@@ -30,7 +32,12 @@ class WebApi:
         self.load_auth_values()
         self.check_for_refresh_token(self.expiry_time)
 
+    # Called when registering as a new user
     def get_auth_info(self):
+        # If we are new, re-do entire auth process.
+        with shelve.open('../.info') as shelf:
+            shelf.clear()
+
         current_time = time.time()
         self.generate_auth_code()
         info = self.get_access_info()
@@ -59,14 +66,14 @@ class WebApi:
         while time.time() < timeout + 120:  # We spend 2 minutes waiting for auth confirmation
             response = requests.post(self.register_user_url,
                                      json={'uuid': str(self.uuid)})
-            print(response)
             if response.status_code == 200:
                 print('authenticated')
                 return response.json()
 
             time.sleep(3)
 
-        sys.exit('Could not authenticate')  # TODO USER NOTIFY
+        send_notif('Could not authenticate', 'Spotify Helper closed.')
+        sys.exit('Could not authenticate')
 
     # Gets the new tokens after previous ones expire, following the format described by
     # the Spotify authorization guide.
@@ -84,7 +91,10 @@ class WebApi:
         info = r.json()
 
         if 'error' in info:
-            sys.exit(info.get('erro_description'))  # TODO USER NOTIFY
+            send_notif('Spotify Helper closed', 'Please restart the application and \
+                                                re-authenticate')
+            self.get_auth_info()
+            sys.exit(info.get('error_description'))
 
         # If we need additional permissions and have added them to the scope, the
         # old keys will not work, and we need new authentication info.
