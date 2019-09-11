@@ -11,6 +11,7 @@ from pynput.keyboard import Key, KeyCode, Listener
 
 from src.spotify_api.spotify import Spotify
 from src.notifications.notif_handler import send_notif
+from src.errors.exceptions import AlreadyNotifiedException
 
 bindings_file = os.path.abspath('../bindings.txt')  # TODO reload bindings after file change
 
@@ -82,6 +83,8 @@ class SpotifyHelper:
 
                     except ConnectionError:
                         send_notif('Connection Error', 'Internet connection not available')
+                    except AlreadyNotifiedException:
+                        pass
                     except Exception as e:
                         send_notif('Error', 'Something went wrong')
                         print(e)
