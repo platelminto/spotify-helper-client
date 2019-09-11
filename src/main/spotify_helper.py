@@ -29,6 +29,7 @@ class SpotifyHelper:
         self.currently_pressed_keys = list()
         self.looking_for = {}
         self.methods_to_run = deque([])
+        self.has_released_key = True
 
         self.load_bindings_from_file(bindings_file)
 
@@ -98,25 +99,21 @@ class SpotifyHelper:
             self.currently_pressed_keys.append(key)
 
         for key_tuple, methods in self.looking_for.items():
-            if self.currently_pressed_keys == list(key_tuple):
+            # has_released_key avoids running the same methods for the same keyboard
+            # press - must release a key to run it again.
+            if self.currently_pressed_keys == list(key_tuple) and self.has_released_key:
                 for method in methods:
                     self.methods_to_run.append(method)
 
-                # Remove the last element so, to run the same binding again, the user must
-                # repress the last key (to avoid rerunning methods on the same key presses).
-                self.currently_pressed_keys.pop(-1)
+                self.has_released_key = False
 
     def on_release(self, key):
         try:
+            self.has_released_key = True
             self.currently_pressed_keys.remove(key)
 
         except ValueError:  # Sometimes it's already empty so raises this exception, to be ignored.
             pass
-
-    # Begins the keyboard listener.
-    def run(self):
-        listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
-        listener.start()
 
     # Get pynput key from a string - modifier keys are captured in the try statement,
     # while normal letter keys are obtained from the KeyCode.from_char() method.
@@ -127,3 +124,8 @@ class SpotifyHelper:
 
         except AttributeError:
             return KeyCode.from_char(key_str)
+
+    # Begins the keyboard listener.
+    def run(self):
+        listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
+        listener.start()
