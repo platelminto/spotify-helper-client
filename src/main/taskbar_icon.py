@@ -1,5 +1,6 @@
 # Is the main app, and needs to be the main thread for pystray to work correctly.
-
+import os
+import sys
 import threading
 import time
 import webbrowser
@@ -7,6 +8,8 @@ import webbrowser
 from PIL import Image
 from pystray import Icon, Menu, MenuItem
 
+# Needed for the program to work from an IDE and from the commandline.
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 # Begins the keyboard listener.
 class SpotifyThread(threading.Thread):
@@ -15,7 +18,7 @@ class SpotifyThread(threading.Thread):
         self.daemon = True
 
     def run(self):
-        import src.main.spotify_helper
+        import main.spotify_helper
 
 
 spotify_thread = SpotifyThread()

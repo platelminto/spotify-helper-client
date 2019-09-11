@@ -1,15 +1,12 @@
-# Main program, starts the keyboard listening.
+# Handles the keyboard listening
 
 import sys
 
-import os
 import traceback
 
 import requests
 from pynput.keyboard import Key, KeyCode, Listener
 
-# Needed for the program to work from an IDE and from the commandline.
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from spotify_api.spotify import Spotify
 from notifications.notif_handler import send_notif
