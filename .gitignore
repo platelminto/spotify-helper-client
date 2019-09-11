@@ -5,5 +5,5 @@ src/**/__pycache__/
 .idea/
 bin/
 venv
-src/.info
+src/.info*
 src.egg-info/
