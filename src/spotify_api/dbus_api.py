@@ -1,53 +1,36 @@
 # Methods to get media info through DBus.
 
 import platform
-import threading
-import time
+from src.notifications.notif_handler import send_notif
 
 import dbus
 
 
 # Many of the methods just parse the DBus media output into a standard format.
 class DBusApi:
-
     def __init__(self):
         self.current_os = platform.system()
         self.player = 'org.mpris.MediaPlayer2.Player'
 
+        self.set_dbus_connections()
+
+    def set_dbus_connections(self):
         self.session_bus = dbus.SessionBus()
-        self.spotify_open = False
+        self.dbus_connected = False
 
         try:
             self.spotify_bus = self.session_bus.get_object('org.mpris.MediaPlayer2.spotify',
                                                            '/org/mpris/MediaPlayer2')
-            self.spotify_open = True
 
-        except dbus.exceptions.DBusException:
-            t = threading.Thread(target=self.check_spotify_open)
-            t.daemon = True
-            t.start()
+            self.spotify_properties = dbus.Interface(self.spotify_bus,
+                                                     'org.freedesktop.DBus.Properties')
+            self.metadata = self.spotify_properties.Get(self.player, 'Metadata')
+            self.interface = dbus.Interface(self.spotify_bus, self.player)
 
-            return
+            self.dbus_connected = True
 
-        self.spotify_properties = dbus.Interface(self.spotify_bus,
-                                                 'org.freedesktop.DBus.Properties')
-        self.metadata = self.spotify_properties.Get(self.player, 'Metadata')
-
-        self.interface = dbus.Interface(self.spotify_bus, self.player)
-
-    # The DBus connection is like a socket and stays open, so we keep trying to connect it
-    # until a Spotify session is found.
-    def check_spotify_open(self):
-        while not self.spotify_open:
-            time.sleep(10)
-
-            try:
-                self.spotify_bus = self.session_bus.get_object('org.mpris.MediaPlayer2.spotify',
-                                                               '/org/mpris/MediaPlayer2')
-                self.spotify_open = True
-
-            except dbus.exceptions.DBusException:
-                pass
+        except dbus.DBusException:
+            self.dbus_disconnect()
 
     # Spotify doesn't support the majority of available properties
     def get_property(self, player_propety):
@@ -58,10 +41,23 @@ class DBusApi:
         return self.spotify_properties.Set('org.mpris.MediaPlayer2.Player', player_propety, value)
 
     def run_method(self, method_str, *args):
-        return getattr(self.interface, method_str)(*args)
+        if not self.dbus_connected:
+            self.set_dbus_connections()
+        if self.dbus_connected:
+            try:
+                return getattr(self.interface, method_str)(*args)
+            except dbus.DBusException:
+                self.dbus_disconnect()
 
     def get_info(self, info_str):
-        return self.metadata.get(info_str)
+        try:
+            return self.metadata.get(info_str)
+        except dbus.DBusException:
+            print('heyo')
+
+    def dbus_disconnect(self):
+        self.dbus_connected = False
+        send_notif('Spotify closed', 'Open Spotify and try again.')
 
     def get_track_id(self):
         return self.get_info('mpris:trackid').split(':')[-1]
@@ -78,7 +74,7 @@ class DBusApi:
     def get_art_url(self):
         return self.get_info('mpris:artUrl')
 
-    def get_current_track(self): # Tries to (partly) emulate a Spotify track object
+    def get_current_track(self):  # Tries to (partly) emulate a Spotify track object
         track = dict()
 
         track['name'] = self.get_track()
