@@ -27,7 +27,10 @@ def open_bindings_file():
 
 
 if __name__ == "__main__":
-    SpotifyHelper().run()
+    try:
+        SpotifyHelper().run()
+    except Exception as e:
+        logging.error(str(e) + ':' + str(e.__traceback__))
 
     icon_image = Image.open('../resources/spo.png')
     icon = Icon('spotify-helper', icon_image, menu=Menu(
