@@ -41,23 +41,19 @@ class DBusApi:
         return self.spotify_properties.Set('org.mpris.MediaPlayer2.Player', player_propety, value)
 
     def run_method(self, method_str, *args):
-        return self.ensure_dbus_connection(getattr(self.interface, method_str), *args)
-
-    def get_info(self, info_str):
-        return self.ensure_dbus_connection(self.metadata.get, info_str)
-
-    # Run a function ensuring we are connected to the Spotify DBus bus.
-    def ensure_dbus_connection(self, function, *args):
         if not self.dbus_connected:
             self.set_dbus_connections()
         if self.dbus_connected:
             try:
-                response = function(*args)
+                response = getattr(self.interface, method_str)(*args)
                 logging.info('Dbus connected with info ' + str(response))
                 return response
             except dbus.DBusException:
                 logging.info('Dbus disconnected')
                 self.dbus_disconnect()
+
+    # def get_info(self, info_str):
+    #     return self.ensure_dbus_connection(self.metadata.get, info_str)
 
     def dbus_disconnect(self):
         self.dbus_connected = False
