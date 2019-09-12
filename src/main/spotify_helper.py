@@ -1,4 +1,6 @@
 # Handles the keyboard listening
+import ast
+import configparser
 import logging
 import sys
 import os
@@ -9,7 +11,6 @@ from time import sleep
 import requests
 from pynput import keyboard
 from pynput.keyboard import Key, KeyCode
-
 
 from src.spotify_api.spotify import Spotify
 from src.notifications.notif_handler import send_notif
@@ -28,14 +29,11 @@ class SpotifyHelper:
 
         self.currently_pressed_keys = list()
         self.looking_for = {}
-        self.methods_to_run = deque([])
         self.has_released_key = True
 
         self.load_bindings_from_file(bindings_file)
-
-        method_handler_thread = threading.Thread(target=self.check_methods_to_run)
-        method_handler_thread.daemon = True
-        method_handler_thread.start()
+        self.atomic_method_groups = SpotifyHelper.get_atomic_method_groups()
+        self.method_group_thread_queues = self.get_method_group_thread_queues()
 
     def load_bindings_from_file(self, file):
         with open(file) as file:
@@ -69,14 +67,66 @@ class SpotifyHelper:
 
                         self.looking_for[keys_tuple].append(method)
 
-    # Runs as a thread, as we don't want operations that might
-    # take long (such as calls to the internet) to block keyboard
-    # listening.
-    def check_methods_to_run(self):
+    # Some methods can run at the same time, others cannot: we group
+    # them as 'independent', which can be run in any order, 'self_dependent',
+    # which have to be run sequentially from themselves, and any amount of
+    # other groups, whose methods have to run sequentially from each other.
+    def get_method_group_thread_queues(self):
+        method_group_thread_queues = dict()
+        for group in self.atomic_method_groups:
+            # If it's self dependent, make a new thread group for each method
+            if group == 'self_dependent':
+                for method in self.atomic_method_groups[group]:
+                    method_group_thread_queues[method] = deque([])
+                    self.start_queue_listening_thread(method_group_thread_queues[method])
+            # If it's a custom group, set a single queue for that entire group
+            elif group != 'independent':
+                method_group_thread_queues[group] = deque([])
+                self.start_queue_listening_thread(method_group_thread_queues[group])
+
+        return method_group_thread_queues
+
+    # Return a dict with each atomic_group (independent, self_dependent, etc.)
+    # connected to a list of the methods assigned to it.
+    @staticmethod
+    def get_atomic_method_groups():
+        thread_groups = dict()
+
+        config = configparser.ConfigParser()
+        config.read('../config.ini')
+        for group in config['method_groups']:
+            thread_groups[group] = ast.literal_eval(config['method_groups'][group])
+
+        return thread_groups
+
+    def start_queue_listening_thread(self, queue):
+        threading.Thread(target=self.check_methods_to_run,
+                         args=(queue,),  # A singleton tuple
+                         daemon=True).start()
+
+    def queue_method(self, method):
+        def get_method_group(method):
+            for group in self.atomic_method_groups:
+                if method in self.atomic_method_groups[group]:
+                    return group
+
+        # Independent groups send just that method to a thread to be run
+        if method in self.get_atomic_method_groups()['independent']:
+            self.start_queue_listening_thread(deque([method]))
+        # Self-dependent & custom groups add their method to the appropriate queue
+        elif method in self.get_atomic_method_groups()['self_dependent']:
+            self.method_group_thread_queues[method].append(method)
+        else:
+            self.method_group_thread_queues[get_method_group(method)].append(method)
+
+    # Given a queue, keep checking it, running methods in the order
+    # they show up.
+    def check_methods_to_run(self, method_queue):
         while True:
-            if len(self.methods_to_run) > 0:
-                self.run_method(self.methods_to_run.popleft())
+            if len(method_queue) > 0:
+                self.run_method(method_queue.popleft())
             else:
+                # If there are no operations, we don't want to be checking too often
                 sleep(0.01)
 
     def run_method(self, method):
@@ -89,7 +139,7 @@ class SpotifyHelper:
             pass
         except Exception as e:
             send_notif('Error', 'Something went wrong')
-            logging.error(str(e) + ':' + str(e.__traceback__))
+            logging.error('{}:{}'.format(e, e.__traceback__))
 
     def on_press(self, key):
         # Keys are unique in each binding, as it makes no sense to have ctrl+ctrl+f5, for example.
@@ -103,7 +153,7 @@ class SpotifyHelper:
             # press - must release a key to run it again.
             if self.currently_pressed_keys == list(key_tuple) and self.has_released_key:
                 for method in methods:
-                    self.methods_to_run.append(method)
+                    self.queue_method(method)
 
                 self.has_released_key = False
 
@@ -132,3 +182,7 @@ class SpotifyHelper:
     def run(self):
         listener = keyboard.Listener(on_press=self.on_press, on_release=self.on_release)
         listener.start()
+
+
+if __name__ == '__main__':
+    SpotifyHelper().run()
