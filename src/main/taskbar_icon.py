@@ -16,7 +16,7 @@ logging.basicConfig(filename='../spotify-helper.log', level=logging.INFO,
 # Opens the bindings file in the default text editor
 def open_bindings_file():
     send_notif('Changing bindings', 'Please restart the Spotify Helper app after '
-                                     'saving your changes')
+                                    'saving your changes')
     current_os = platform.system()
     if current_os == 'Darwin':  # macOS
         subprocess.call(('open', bindings_file))

@@ -22,10 +22,10 @@ class DBusApi:
             self.spotify_bus = self.session_bus.get_object('org.mpris.MediaPlayer2.spotify',
                                                            '/org/mpris/MediaPlayer2')
 
+            self.interface = dbus.Interface(self.spotify_bus, self.player)
             self.spotify_properties = dbus.Interface(self.spotify_bus,
                                                      'org.freedesktop.DBus.Properties')
             self.metadata = self.spotify_properties.Get(self.player, 'Metadata')
-            self.interface = dbus.Interface(self.spotify_bus, self.player)
 
             self.dbus_connected = True
 
