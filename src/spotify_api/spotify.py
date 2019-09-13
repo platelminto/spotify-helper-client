@@ -4,6 +4,7 @@ import shelve
 import configparser
 
 import uuid
+
 from ..notifications.notif_handler import send_notif, send_notif_with_web_image
 from ..spotify_api.web_api import WebApi
 from ..errors.exceptions import AlreadyNotifiedException
@@ -15,6 +16,9 @@ if current_os == 'Darwin':
 
 elif current_os == 'Linux':
     from ..spotify_api.dbus_api import DBusApi
+
+elif current_os == 'Windows':
+    from src.spotify_api.windows_api import WindowsApi
 
 
 def get_device_name():
@@ -47,6 +51,9 @@ class Spotify:
 
         elif current_os == 'Linux':
             self.local_api = DBusApi()
+
+        elif current_os == 'Windows':
+            self.local_api = WindowsApi()
 
         self.repeat_states = ['track', 'context', 'off']
 

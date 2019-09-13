@@ -3,7 +3,7 @@ import logging
 import platform
 from src.notifications.notif_handler import send_notif
 
-import dbus
+import dbus  # Already on most Linux systems
 
 
 # Many of the methods just parse the DBus media output into a standard format.
@@ -14,6 +14,7 @@ class DBusApi:
 
         self.set_dbus_connections()
 
+    # Sets the variables we will need to communicate with Spotify on DBus.
     def set_dbus_connections(self):
         self.session_bus = dbus.SessionBus()
         self.dbus_connected = False
@@ -40,6 +41,8 @@ class DBusApi:
     def set_property(self, player_propety, value):
         return self.spotify_properties.Set('org.mpris.MediaPlayer2.Player', player_propety, value)
 
+    # Since DBus operates like a socket connection, every time we disconnect from it (with an error),
+    # we have to try to start the whole connection anew.
     def run_method(self, method_str, *args):
         if not self.dbus_connected:
             self.set_dbus_connections()

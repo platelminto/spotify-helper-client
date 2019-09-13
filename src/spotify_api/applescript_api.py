@@ -3,6 +3,8 @@
 import subprocess
 
 
+# The AppleScript API uses macOS's AppleScript to send commandline instructions to Spotify, which natively
+# supports AppleScript.
 class AppleScriptApi:
 
     @staticmethod
