@@ -71,6 +71,7 @@ class WebApi:
                                      json={'uuid': str(self.uuid)})
             if response.status_code == 200:
                 logging.info('initial authentication done.')
+                send_notif('Success', 'You are now authenticated.')
                 return response.json()
 
             time.sleep(3)
