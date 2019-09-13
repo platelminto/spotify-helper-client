@@ -3,6 +3,7 @@ import logging
 import os
 import shelve
 import sys
+import uuid
 
 import requests
 import time
@@ -16,7 +17,7 @@ class WebApi:
 
     # This follows the 'Authorization Code Flow' path set out by
     # https://developer.spotify.com/documentation/general/guides/authorization-guide/#authorization-code-flow.
-    def __init__(self, scope_list, client_id, redirect_uri, uuid):
+    def __init__(self, scope_list, client_id, redirect_uri):
         self.api_url = 'https://api.spotify.com/v1/'
         self.authorize_access_url = 'https://accounts.spotify.com/authorize/'
         self.register_user_url = 'https://platelminto.eu.pythonanywhere.com/users/complete'
@@ -25,7 +26,6 @@ class WebApi:
         self.scope_list = scope_list
         self.client_id = client_id
         self.redirect_uri = redirect_uri
-        self.uuid = uuid
 
         # Load authentication tokens, and if they do checks
         # whether they need to be refreshed.
@@ -37,6 +37,9 @@ class WebApi:
         # If we are new, re-do entire auth process.
         with shelve.open('../.info') as shelf:
             shelf.clear()
+            new_uuid = uuid.uuid4()
+            shelf['uuid'] = new_uuid
+            self.uuid = shelf['uuid']
 
         current_time = time.time()
         self.generate_auth_code()
@@ -125,6 +128,7 @@ class WebApi:
     def load_auth_values(self):
         try:
             with shelve.open('../.info') as shelf:
+                self.uuid = shelf['uuid']
                 self.access_token = shelf['access_token']
                 self.refresh_token = shelf['refresh_token']
                 self.expiry_time = shelf['expiry_time']

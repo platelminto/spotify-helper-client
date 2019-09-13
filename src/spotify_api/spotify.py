@@ -3,8 +3,6 @@ import platform
 import shelve
 import configparser
 
-import uuid
-
 from ..notifications.notif_handler import send_notif, send_notif_with_web_image
 from ..spotify_api.web_api import WebApi
 from ..errors.exceptions import AlreadyNotifiedException
@@ -32,20 +30,13 @@ class Spotify:
         config.read('../config.ini')
         client_id = config['authentication']['client_id']
 
-        with shelve.open('../.info') as shelf:
-            if 'uuid' not in shelf:
-                shelf.clear()  # If we have lost the uuid, start as new
-                new_uuid = uuid.uuid4()
-                shelf['uuid'] = new_uuid
-            self.uuid = shelf['uuid']
-
         redirect_uri = 'https://platelminto.eu.pythonanywhere.com/users/registering'
 
         scope_list = ['user-library-read', 'user-library-modify', 'playlist-modify-public',
                       'user-modify-playback-state', 'user-read-playback-state']
 
         self.web_api = WebApi(scope_list=scope_list, client_id=client_id,
-                              redirect_uri=redirect_uri, uuid=self.uuid)
+                              redirect_uri=redirect_uri)
         if current_os == 'Darwin':
             self.local_api = AppleScriptApi()
 
