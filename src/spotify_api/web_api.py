@@ -94,22 +94,21 @@ class WebApi:
 
         info = r.json()
 
-        if 'error' in info:
-            send_notif('Spotify Helper closed', 'Please restart the application and \
-                                                re-authenticate')
+        # 403 indicates the user UUID is not registered on the server,
+        if 'error' in info or r.status_code == 403:
+            send_notif('Authentication error', 'Please re-authenticate, or try restarting the app.')
             self.get_auth_info()
             logging.warning('Authentication refresh failed, info: ' + str(info))
-            sys.exit(info.get('error_description'))
+            return  # Values get saved in get_auth_info()
 
         # If we need additional permissions and have added them to the scope, the
         # old keys will not work, and we need new authentication info.
-        if not set(info.get('scope').split(' ')).issuperset(set(self.scope_list)):
-            self.get_auth_info()
-
         # 401 means there is a general unauthorized error, so we start anew with
         # the authentication process.
-        if r.status_code == 401:
+        if (not set(info.get('scope').split(' ')).issuperset(set(self.scope_list))) or \
+                r.status_code == 401:
             self.get_auth_info()
+            return
 
         if 'refresh_token' in info:
             self.refresh_token = info.get('refresh_token')
