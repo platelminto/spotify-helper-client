@@ -5,6 +5,7 @@ import logging
 import sys
 import os
 import threading
+import traceback
 from collections import deque
 from time import sleep
 
@@ -139,7 +140,7 @@ class SpotifyHelper:
             pass
         except Exception as e:
             send_notif('Error', 'Something went wrong')
-            logging.error('{}:{}'.format(e, e.__traceback__))
+            logging.error('{}:{}'.format(e, traceback.format_exc()))
 
     def on_press(self, key):
         # Keys are unique in each binding, as it makes no sense to have ctrl+ctrl+f5, for example.
