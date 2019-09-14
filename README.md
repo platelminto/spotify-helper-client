@@ -1,7 +1,7 @@
 ## spotify-helper
 Provides various utility methods to interact with Spotify, mostly through the ability to assign keyboard shortcuts to most Spotify functions. These are editable in the `bindings.txt` file. Run `taskbar_icon.py` with python 3 from `src/main` to start the script (has to be run as sudo on macOS for keyboard access).
 
-The program first tries to directly interact with the Spotify client (unavailable on Windows), and then falls back on using the Web API; some methods are only available using the Web API.
+The program first tries to directly interact with the Spotify client, and then falls back on using the Web API; some methods are only available using the Web API.
 
 
 ### Dependencies
