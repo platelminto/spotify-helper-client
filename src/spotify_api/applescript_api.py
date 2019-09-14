@@ -1,5 +1,5 @@
 # Methods to get media info through AppleScript.
-
+import logging
 import subprocess
 
 
@@ -9,12 +9,15 @@ class AppleScriptApi:
 
     @staticmethod
     def run_command(command):
-        result = subprocess.run(['osascript', '-e',
-                                'tell application "Spotify" to ' + command],
-                                stdout=subprocess.PIPE)  # Pipe output to the variable
+        # Pipe output to the variable
+        result = subprocess.run(" ".join(['osascript', '-e',
+                                          "'tell application \"Spotify\" to {}\'".format(command)]),
+                                stdout=subprocess.PIPE, shell=True, stderr=subprocess.PIPE)
 
         if result.returncode is not 0:
-            raise NameError
+            logging.warning('AppleScript API failed to run command {} with stdout: {} and '
+                            'stderr: {}, used Web API instead'.format(command, result.stdout, result.stderr))
+            raise AttributeError
 
         return result.stdout.decode('utf-8').rstrip()  # Returns command's result
 
@@ -78,7 +81,7 @@ class AppleScriptApi:
 
     @staticmethod
     def toggle_repeat():
-        return AppleScriptApi.run_command('set repeating to not repeating')  # TODO check this on mac
+        return AppleScriptApi.run_command('set repeating to not repeating')  # Cannot switch to song-repeat
 
     @staticmethod
     def toggle_shuffle():
