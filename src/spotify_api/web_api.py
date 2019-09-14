@@ -92,23 +92,23 @@ class WebApi:
         except (requests.exceptions.ConnectionError, requests.exceptions.ReadTimeout):
             raise ConnectionError
 
-        info = r.json()
-
         # 403 indicates the user UUID is not registered on the server,
-        if 'error' in info or r.status_code == 403:
+        if r.status_code == 403:
             send_notif('Authentication error', 'Please re-authenticate, or try restarting the app.')
             self.get_auth_info()
-            logging.warning('Authentication refresh failed, info: ' + str(info))
+            logging.warning('Authentication refresh failed, info: ' + str(r.content))
             return  # Values get saved in get_auth_info()
 
         # If we need additional permissions and have added them to the scope, the
         # old keys will not work, and we need new authentication info.
-        # 401 means there is a general unauthorized error, so we start anew with
+        # 400-499 means there is a general user error, so we start anew with
         # the authentication process.
-        if (not set(info.get('scope').split(' ')).issuperset(set(self.scope_list))) or \
-                r.status_code == 401:
+        if (400 <= r.status_code < 500) or \
+                (not set(r.json().get('scope').split(' ')).issuperset(set(self.scope_list))):
             self.get_auth_info()
             return
+
+        info = r.json()
 
         if 'refresh_token' in info:
             self.refresh_token = info.get('refresh_token')
