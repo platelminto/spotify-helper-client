@@ -28,10 +28,13 @@ def open_bindings_file():
 
 
 if __name__ == "__main__":
-    try:
-        SpotifyHelper().run()
-    except Exception as e:
-        logging.error('{}:{}'.format(e, traceback.format_exc()))
+    # Called after icon is set up due to threading issues.
+    def run_spotify_helper(icon_callback):
+        try:
+            icon_callback.visible = True
+            SpotifyHelper().run()
+        except Exception as e:
+            logging.error('{}:{}'.format(e, traceback.format_exc()))
 
     icon_image = Image.open('../resources/spo.png')
     icon = Icon('spotify-helper', icon_image, menu=Menu(
@@ -45,4 +48,8 @@ if __name__ == "__main__":
         ),
     ))
 
-    icon.run()
+    # After icon starts running, we start the keyboard listener thread (together with the main
+    # Spotify Helper code), since on macOS pystray won't work if pynput runs first, as the latter seems
+    # to call a Mac _MainThread function which pystray then tries to call again but is not allowed - running
+    # pystray first seems to be ok though.
+    icon.run(setup=run_spotify_helper)
