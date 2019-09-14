@@ -149,8 +149,6 @@ class SpotifyHelper:
         if key not in self.currently_pressed_keys:
             self.currently_pressed_keys.append(key)
 
-        print(self.currently_pressed_keys)
-
         for key_tuple, methods in self.looking_for.items():
             # has_released_key avoids running the same methods for the same keyboard
             # press - must release a key to run it again.
