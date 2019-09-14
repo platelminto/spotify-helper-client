@@ -135,8 +135,6 @@ class WebApi:
         except KeyError:
             self.get_auth_info()
 
-        logging.info('Authenticated from file')
-
     # The authorization values need to be in a specified header.
     def get_access_header(self):
         self.check_for_refresh_token(self.expiry_time)
