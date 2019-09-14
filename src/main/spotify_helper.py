@@ -183,10 +183,13 @@ class SpotifyHelper:
 
     # Begins the keyboard listener.
     def run(self):
-        with keyboard.Listener(
+        self.listener = keyboard.Listener(
                 on_press=self.on_press,
-                on_release=self.on_release) as listener:
-            listener.join()
+                on_release=self.on_release)
+        self.listener.start()
+
+    def stop(self):
+        self.listener.stop()
 
 
 if __name__ == '__main__':

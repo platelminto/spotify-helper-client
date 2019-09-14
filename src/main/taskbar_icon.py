@@ -29,12 +29,18 @@ def open_bindings_file():
 
 if __name__ == "__main__":
     # Called after icon is set up due to threading issues.
+    spotify_helper = SpotifyHelper()
+
     def run_spotify_helper(icon_callback):
         try:
             icon_callback.visible = True
-            SpotifyHelper().run()
+            spotify_helper.run()
         except Exception as e:
             logging.error('{}:{}'.format(e, traceback.format_exc()))
+
+    def stop_program(icon_callback):
+        icon_callback.stop()
+        spotify_helper.stop()
 
     icon_image = Image.open('../resources/spo.png')
     icon = Icon('spotify-helper', icon_image, menu=Menu(
@@ -44,7 +50,7 @@ if __name__ == "__main__":
         Menu.SEPARATOR,
         MenuItem(
             text='Quit',
-            action=lambda: icon.stop()
+            action=lambda: stop_program(icon)
         ),
     ))
 
