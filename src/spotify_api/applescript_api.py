@@ -14,7 +14,7 @@ class AppleScriptApi:
                                           "'tell application \"Spotify\" to {}\'".format(command)]),
                                 stdout=subprocess.PIPE, shell=True, stderr=subprocess.PIPE)
 
-        if result.returncode is not 0:
+        if result.returncode != 0:
             logging.warning('AppleScript API failed to run command {} with stdout: {} and '
                             'stderr: {}, used Web API instead'.format(command, result.stdout, result.stderr))
             raise AttributeError
