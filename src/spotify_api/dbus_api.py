@@ -1,5 +1,4 @@
 # Methods to get media info through DBus.
-import logging
 import platform
 from src.notifications.notif_handler import send_notif
 
@@ -49,10 +48,8 @@ class DBusApi:
         if self.dbus_connected:
             try:
                 response = getattr(self.interface, method_str)(*args)
-                logging.info('Dbus connected with info ' + str(response))
                 return response
             except dbus.DBusException:
-                logging.info('Dbus disconnected')
                 self.dbus_disconnect()
 
     # def get_info(self, info_str):
