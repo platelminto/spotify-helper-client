@@ -109,21 +109,22 @@ class Spotify:
             toggled_shuffle = not response.json().get('shuffle_state')
 
             self.call_web_method('me/player/shuffle', 'put', params={'state': toggled_shuffle})
-            send_notif('Shuffle toggled', 'Shuffle now ' + ('enabled' if toggled_shuffle else 'disabled'))
+            send_notif('Shuffle toggled',
+                       'Shuffle now {}'.format('enabled' if toggled_shuffle else 'disabled'))
 
         self.try_local_method_then_web('toggle_shuffle', 'me/player', 'get', change_shuffle_with_web_api)
 
     def toggle_repeat(self):
-        # There are 3 repeat states (off, track, context), so we cannot simply toggle
+        # There are 3 repeat states (track, context, off), so we cannot simply toggle
         # on and off, we must switch between them.
         def change_state_with_web_api(response):
             repeat_state = response.json().get('repeat_state')
-
             next_state = self.repeat_states[self.repeat_states.index(repeat_state) - 1]
             self.call_web_method('me/player/repeat', 'put', params={'state': next_state})
-            send_notif('Repeat changed', 'Repeating is now set to: ' + next_state)
+            send_notif('Repeat changed',
+                       'Repeating is now set to: {}'.format(self.get_shuffle_and_repeat_state()[1]))
 
-        self.try_local_method_then_web('toggle_repeat', 'me/player', 'get', change_state_with_web_api, 'get')
+        self.try_local_method_then_web('toggle_repeat', 'me/player', 'get', change_state_with_web_api)
 
     def play_on_current_device(self):
         self.call_web_method('me/player', 'put', payload={'device_ids': [self.get_current_device_id()]})
@@ -286,7 +287,6 @@ class Spotify:
     def is_playing(self):
         return self.try_local_method_then_web('is_playing', 'me/player', 'get').json().get('is_playing')
 
-    # Utility method for possible future use.
     def get_shuffle_and_repeat_state(self):
         response = self.call_web_method('me/player', 'get').json()
         return response.get('shuffle_state'), response.get('repeat_state')
