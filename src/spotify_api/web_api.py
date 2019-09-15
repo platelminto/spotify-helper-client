@@ -96,7 +96,7 @@ class WebApi:
         if r.status_code == 403:
             send_notif('Authentication error', 'Please re-authenticate, or try restarting the app.')
             self.get_auth_info()
-            logging.warning('Authentication refresh failed, info: ' + str(r.content))
+            logging.warning('Authentication refresh failed, info: {}'.format(r.content))
             return  # Values get saved in get_auth_info()
 
         # If we need additional permissions and have added them to the scope, the
@@ -141,29 +141,16 @@ class WebApi:
 
         return {'Authorization': 'Bearer ' + self.access_token}
 
-    @staticmethod
-    def check_status_code(r):
-        code = r.status_code
-
-        # These codes are error codes.
-        if code >= 300:
-            logging.warning('Request failed with code ' + code)
-            logging.warning('Fail message: ' + r.json().get('error').get('message'))
-            if not (code == 403):
-                raise Exception
-
-        return r
-
     # The following functions are wrappers around requests' basic rest functions.
 
     def get(self, endpoint, params=None, timeout=4, retry=1):
         try:
-            return self.check_status_code(requests.get(self.api_url + endpoint,
-                                                       params=params, headers=self.get_access_header(),
-                                                       timeout=timeout))
+            return requests.get(self.api_url + endpoint,
+                                params=params, headers=self.get_access_header(),
+                                timeout=timeout)
 
         except requests.exceptions.ConnectionError:
-            if retry is not 0:
+            if retry != 0:
                 return self.get(endpoint, params, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
@@ -172,13 +159,13 @@ class WebApi:
 
     def post(self, endpoint, params=None, payload=None, timeout=4, retry=1):
         try:
-            return self.check_status_code(requests.post(self.api_url + endpoint,
-                                                        data=json.dumps(payload), params=params,
-                                                        headers=self.get_access_header(),
-                                                        timeout=timeout))
+            return requests.post(self.api_url + endpoint,
+                                 data=json.dumps(payload), params=params,
+                                 headers=self.get_access_header(),
+                                 timeout=timeout)
 
         except requests.exceptions.ConnectionError:
-            if retry is not 0:
+            if retry != 0:
                 return self.post(endpoint, params, payload, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
@@ -187,13 +174,13 @@ class WebApi:
 
     def put(self, endpoint, params=None, payload=None, timeout=4, retry=1):
         try:
-            return self.check_status_code(requests.put(self.api_url + endpoint,
-                                                       data=json.dumps(payload), params=params,
-                                                       headers=self.get_access_header(),
-                                                       timeout=timeout))
+            return requests.put(self.api_url + endpoint,
+                                data=json.dumps(payload), params=params,
+                                headers=self.get_access_header(),
+                                timeout=timeout)
 
         except requests.exceptions.ConnectionError:
-            if retry is not 0:
+            if retry != 0:
                 return self.put(endpoint, params, payload, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
@@ -202,13 +189,13 @@ class WebApi:
 
     def delete(self, endpoint, params=None, payload=None, timeout=4, retry=1):
         try:
-            return self.check_status_code(requests.delete(self.api_url + endpoint,
-                                                          data=json.dumps(payload), params=params,
-                                                          headers=self.get_access_header(),
-                                                          timeout=timeout))
+            return requests.delete(self.api_url + endpoint,
+                                   data=json.dumps(payload), params=params,
+                                   headers=self.get_access_header(),
+                                   timeout=timeout)
 
         except requests.exceptions.ConnectionError:
-            if retry is not 0:
+            if retry != 0:
                 return self.delete(endpoint, params, payload, timeout, retry - 1)
         except requests.exceptions.ReadTimeout:
             pass
