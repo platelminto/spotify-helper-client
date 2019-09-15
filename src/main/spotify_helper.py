@@ -44,13 +44,13 @@ class SpotifyHelper:
                 method = method_and_keycodes[0]  # The method to run
                 rest_of_line = method_and_keycodes[1]  # Includes bindings we have to parse
 
-                # Allows comments in the bindings file
+                # Allows inline comments in the bindings file
                 if '#' in rest_of_line:
                     rest_of_line = rest_of_line[:rest_of_line.index('#')]
 
                 bindings = rest_of_line.rstrip()
 
-                if bindings is not '':
+                if bindings != '':
                     # Can have multiple bindings split by commas.
                     for binding in bindings.split(','):
                         keys = list()
