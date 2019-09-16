@@ -131,7 +131,7 @@ class Spotify:
 
     def toggle_save_monthly_playlist(self):
         song_id = self.get_current_song_id()
-        is_in_playlist = self.is_in_playlist(song_id, 0)
+        is_in_playlist = self.is_in_monthly_playlist(song_id, 0)
 
         song = self.get_current_song_info()[0]
 
@@ -212,6 +212,7 @@ class Spotify:
 
         if playlist_id is not None:
             return playlist_id
+        # Check through all pages to look for our playlist
         elif playlist_id is None and Spotify.is_paging(response):
             return self.__fetch_playlist_id(month, year, offset + response.get('limit'))
         else:
@@ -221,7 +222,7 @@ class Spotify:
                 payload={'name': '{} {}'.format(month.capitalize(), year)}
             ).json().get('id')
 
-    def is_in_playlist(self, song_id, offset):
+    def is_in_monthly_playlist(self, song_id, offset):  # TODO refactor into a paging-handling method
         playlist_tracks = self.call_web_method(
             'playlists/{}/tracks'.format(self.get_monthly_playlist_id()),
             'get',
@@ -230,11 +231,13 @@ class Spotify:
 
         exists = len([x for x in playlist_tracks.get('items') if x.get('track').get('id') == song_id]) > 0
 
+        # Run this same method with the next set of results
         if not exists and Spotify.is_paging(playlist_tracks):
-            return self.is_in_playlist(song_id, offset + playlist_tracks.get('limit'))
+            return self.is_in_monthly_playlist(song_id, offset + playlist_tracks.get('limit'))
         else:
             return exists
 
+    # If a response contains a 'next', it means there are more results that we will then have to request.
     @staticmethod
     def is_paging(json):
         return json.get('next') is not None
