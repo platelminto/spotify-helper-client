@@ -202,7 +202,9 @@ class Spotify:
         return self.call_web_method('me', 'get').json().get('id')
 
     def __fetch_playlist_id(self, month, year, offset):
-        response = self.call_web_method('me/playlists', 'get').json()
+        response = self.call_web_method('me/playlists', 'get',
+                                        params={'limit': 50,
+                                                'offset': offset}).json()
 
         playlist_id = None
 
