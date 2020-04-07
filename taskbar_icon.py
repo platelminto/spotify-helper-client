@@ -7,10 +7,10 @@ import traceback
 
 from PIL import Image
 from pystray import Icon, Menu, MenuItem
-from src.main.spotify_helper import SpotifyHelper, bindings_file
-from src.notifications.notif_handler import send_notif
+from spotify_helper import SpotifyHelper, bindings_file
+from notif_handler import send_notif
 
-logging.basicConfig(filename='../spotify-helper.log', level=logging.INFO,
+logging.basicConfig(filename='spotify-helper.log', level=logging.INFO,
                     format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
 
 
@@ -37,12 +37,13 @@ if __name__ == "__main__":
             spotify_helper.run()
         except Exception as e:
             logging.error('{}:{}'.format(e, traceback.format_exc()))
+            traceback.print_exc()
 
     def stop_program(icon_callback):
         icon_callback.stop()
         spotify_helper.stop()
 
-    icon_image = Image.open('../resources/spo.png')
+    icon_image = Image.open(os.path.join(os.path.dirname(__file__), 'resources/spo.png'))
     icon = Icon('spotify-helper', icon_image, menu=Menu(
         MenuItem(
             text='Edit bindings',

@@ -2,10 +2,11 @@
 import platform
 from src.notifications.notif_handler import send_notif
 
-import dbus  # Already on most Linux systems
+import dbus  # Already on most Linux systems, seems broken so we won't use it.
 
 
 # Many of the methods just parse the DBus media output into a standard format.
+# Seems broken, will just use virtual key api
 class DBusApi:
     def __init__(self):
         self.current_os = platform.system()

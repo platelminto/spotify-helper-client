@@ -13,11 +13,14 @@ import requests
 from pynput import keyboard
 from pynput.keyboard import Key, KeyCode
 
-from src.spotify_api.spotify import Spotify
-from src.notifications.notif_handler import send_notif
-from src.errors.exceptions import AlreadyNotifiedException
+from spotify import Spotify
+from notif_handler import send_notif
+from exceptions import AlreadyNotifiedException
 
-bindings_file = os.path.abspath('../bindings.txt')  # TODO reload bindings after file change
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
+
+bindings_file = os.path.join(os.path.dirname(__file__), 'bindings.txt')  # TODO reload bindings after file change
 
 
 class SpotifyHelper:
@@ -93,8 +96,6 @@ class SpotifyHelper:
     def get_atomic_method_groups():
         thread_groups = dict()
 
-        config = configparser.ConfigParser()
-        config.read('../config.ini')
         for group in config['method_groups']:
             thread_groups[group] = ast.literal_eval(config['method_groups'][group])
 
@@ -128,7 +129,7 @@ class SpotifyHelper:
                 self.run_method(method_queue.popleft())
             else:
                 # If there are no operations, we don't want to be checking too often
-                sleep(0.01)
+                sleep(0.1)
 
     def run_method(self, method):
         try:
@@ -141,6 +142,7 @@ class SpotifyHelper:
         except Exception as e:
             send_notif('Error', 'Something went wrong')
             logging.error('{}:{}'.format(e, traceback.format_exc()))
+            traceback.print_exc()
 
     def on_press(self, key):
         # Keys are unique in each binding, as it makes no sense to have ctrl+ctrl+f5, for example.

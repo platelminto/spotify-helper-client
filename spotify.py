@@ -1,23 +1,24 @@
 import datetime
 import logging
+import os
 import platform
 import shelve
 import configparser
 
-from ..notifications.notif_handler import send_notif, send_notif_with_web_image
-from ..spotify_api.web_api import WebApi
-from ..errors.exceptions import AlreadyNotifiedException
+from notif_handler import send_notif, send_notif_with_web_image
+from web_api import WebApi
+from exceptions import AlreadyNotifiedException
 
 current_os = platform.system()
 
 if current_os == 'Darwin':
-    from ..spotify_api.applescript_api import AppleScriptApi
+    from applescript_api import AppleScriptApi
 
-elif current_os == 'Linux':
-    from ..spotify_api.dbus_api import DBusApi
+elif current_os == 'Linux' or current_os == 'Windows':
+    from media_keys_api import MediaKeysApi
 
-elif current_os == 'Windows':
-    from src.spotify_api.windows_api import WindowsApi
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), 'config.ini'))
 
 
 def get_device_name():
@@ -25,10 +26,8 @@ def get_device_name():
 
 
 class Spotify:
-
     def __init__(self):
-        config = configparser.ConfigParser()
-        config.read('../config.ini')
+
         client_id = config['authentication']['client_id']
 
         redirect_uri = 'https://platelminto.eu.pythonanywhere.com/users/registering'
@@ -41,11 +40,8 @@ class Spotify:
         if current_os == 'Darwin':
             self.local_api = AppleScriptApi()
 
-        elif current_os == 'Linux':
-            self.local_api = DBusApi()
-
         elif current_os == 'Windows':
-            self.local_api = WindowsApi()
+            self.local_api = MediaKeysApi()
 
         self.repeat_states = ['track', 'context', 'off']
 
@@ -181,7 +177,7 @@ class Spotify:
         now = datetime.datetime.now()
         month, year = now.strftime('%B'), str(now.year)
 
-        with shelve.open('../.info') as shelf:
+        with shelve.open('.info') as shelf:
             # Check if months and years are available and are correct, if not, update
             # playlist id.
             if 'month' not in shelf or shelf['month'] != month:
@@ -193,7 +189,7 @@ class Spotify:
             return shelf['monthly_playlist_id']
 
     def get_user_id(self):
-        with shelve.open('../.info') as shelf:
+        with shelve.open('.info') as shelf:
             if 'user_id' not in shelf:
                 shelf['user_id'] = self.__fetch_user_id()
             return shelf['user_id']
@@ -340,8 +336,6 @@ class Spotify:
         # though it appears nearly all reasons will always be UNKNOWN, an issue with the Spotify API.
         if 'error' in info and 'reason' in info.get('error'):
             reason = info.get('error').get('reason')
-            config = configparser.ConfigParser()
-            config.read('../config.ini')
             response = config['player_error_strings'][reason]
             send_notif('Player Error', response)
             raise AlreadyNotifiedException

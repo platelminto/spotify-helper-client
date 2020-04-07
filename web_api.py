@@ -10,7 +10,9 @@ import time
 import webbrowser
 import json
 
-from ..notifications.notif_handler import send_notif
+from notif_handler import send_notif
+
+info_file = os.path.join(os.path.dirname(__file__), '.info')
 
 
 class WebApi:
@@ -35,7 +37,7 @@ class WebApi:
     # Called when registering as a new user
     def get_auth_info(self):
         # If we are new, re-do entire auth process.
-        with shelve.open('../.info') as shelf:
+        with shelve.open(info_file) as shelf:
             shelf.clear()
             new_uuid = uuid.uuid4()
             shelf['uuid'] = new_uuid
@@ -118,7 +120,7 @@ class WebApi:
         self.load_auth_values()
 
     def save_auth_values(self, access_token, refresh_token, expiry_time):
-        with shelve.open('../.info') as shelf:
+        with shelve.open(info_file) as shelf:
             shelf['access_token'] = access_token
             shelf['refresh_token'] = refresh_token
             shelf['expiry_time'] = expiry_time
@@ -127,7 +129,7 @@ class WebApi:
 
     def load_auth_values(self):
         try:
-            with shelve.open('../.info') as shelf:
+            with shelve.open(info_file) as shelf:
                 self.uuid = shelf['uuid']
                 self.access_token = shelf['access_token']
                 self.refresh_token = shelf['refresh_token']

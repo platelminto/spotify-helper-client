@@ -8,6 +8,5 @@ pystray==0.14.4
 pywin32==224
 requests==2.22.0
 six==1.12.0
--e git+https://github.com/platelminto/spotify-helper-client.git@82b27af09911a4e3128a953b7050ce1cda0ae1c8#egg=src
 urllib3==1.25.3
 uuid==1.30

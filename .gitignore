@@ -1,10 +1,10 @@
 .project
 .pydevproject
-src/**/__pycache__/
+__pycache__/
 *.iml
 .idea/
 bin/
 venv
-src/.info*
+.info.db
 src.egg-info/
-src/*.log
+*.log

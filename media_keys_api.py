@@ -1,9 +1,8 @@
 from pynput.keyboard import Controller, KeyCode
 
-
-# The Windows API, since Windows doesn't have a standard media API, just uses the virtual keys
-# for media control (available at https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes).
-class WindowsApi:
+# Just uses the virtual keys for media control, applies to Windows
+# (available at https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes).
+class MediaKeysApi:
 
     def __init__(self):
         self.keyboard = Controller()
@@ -13,7 +12,7 @@ class WindowsApi:
         self.keyboard.release(KeyCode.from_vk(keycode))
 
     def play_pause(self):
-        self.send_key(179)
+        self.send_key(173)
 
     def next(self):
         self.send_key(176)
