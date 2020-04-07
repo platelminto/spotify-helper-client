@@ -1,5 +1,5 @@
 ## spotify-helper
-Provides various utility methods to interact with Spotify, mostly through the ability to assign keyboard shortcuts to most Spotify functions. These are editable in the `bindings.txt` file. Run `taskbar_icon.py` with python 3 from `src/main` to start the script (has to be run as sudo on macOS for keyboard access), which should then create an icon in your taskbar.
+Provides various utility methods to interact with Spotify, mostly through the ability to assign keyboard shortcuts to most Spotify functions. These are editable in the `bindings.txt` file. Run `taskbar_icon.py` with python 3 to start the script (has to be run as sudo on macOS for keyboard access), which should then create an icon in your taskbar.
 
 The program first tries to directly interact with the Spotify client, and then falls back on using the Web API; some methods are only available using the Web API.
 
@@ -23,6 +23,6 @@ To install all the dependencies needed, find the appropriate requirements text f
 
 #### Linux-specific dependencies
 
-- [dbus-python](https://pypi.org/project/dbus-python) - to be able to interact with the Spotify client. **This dependency should already be installed on most Linux systems**, but if it isn't available, either install it from PyPI (`pip install dbus-python`) or, if you are using a virtual environment, copy the dbus python files from your system into the virtual environment's lib folder (as described [here](https://stackoverflow.com/a/23237728)).
+- gi - needed for the tray icon. This dependency should already be installed on most Linux systems, but if you are using a virtual environment, make sure to run this command if you find certain python requirements failing to install via pip, then try again:
 
-- gi - needed for the tray icon. **This dependency should also be installed on most Linux systems, as it is very integrated with each Linux setup**; because of this, you cannot get it off of PyPI, so if you are using a virtual environment, follow the steps for copying dbus python files (you only have to copy the `gi` folder, there are no `.so` files).
+```$ sudo apt install libgirepository1.0-dev python3-cairo python-cairo```
