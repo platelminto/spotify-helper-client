@@ -1,6 +1,6 @@
 # Adapted from https://stackoverflow.com/a/17262942.
 
-from plyer.facades import Notification
+#from plyer.facades import Notification
 
 # from win32api import *
 # from win32gui import *
@@ -46,7 +46,9 @@ from plyer.facades import Notification
 #     def OnDestroy(self, hwnd, msg, wparam, lparam):
 #         nid = (self.hwnd, 0)
 #         Shell_NotifyIcon(NIM_DELETE, nid)
+from win10toast import ToastNotifier
 
 
 def send_notif(title, msg, icon_path, duration):
-    Notification.notify(title, msg, 'spotify-helper', app_icon=icon_path, timeout=duration)
+    t = ToastNotifier()
+    t.show_toast(title, msg, icon_path, duration, threaded=True)

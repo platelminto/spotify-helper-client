@@ -5,6 +5,6 @@ __pycache__/
 .idea/
 bin/
 venv
-.info.db
+.info.*
 src.egg-info/
 *.log
