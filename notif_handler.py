@@ -7,8 +7,6 @@ import time
 from urllib.request import urlopen
 from urllib.error import URLError
 
-import windows_notif
-
 current_os = platform.system()  # This method returns 'Darwin' for macs.
 
 notif_icon_path = os.path.join(os.path.dirname(__file__), 'resources/spo.png')
@@ -17,7 +15,7 @@ if current_os == 'Linux':
     import subprocess
 
 if current_os == 'Windows':
-    import threading
+    from win10toast import ToastNotifier
 
 
 def windows_notify(title, text, icon_path, duration):
@@ -26,7 +24,8 @@ def windows_notify(title, text, icon_path, duration):
     # t = threading.Thread(target=windows_notif.send_notif, args=(title, text, icon_path, duration))
     # t.daemon = True
     # t.start()
-    windows_notif.send_notif(title, text, icon_path, duration)
+    t = ToastNotifier()
+    t.show_toast(title, text, icon_path, duration, threaded=True)
 
 
 def apple_notify(title, text):
@@ -55,13 +54,10 @@ def linux_notify(title, text, icon_path, duration):
 def send_notif(title, text, icon_path=notif_icon_path, duration=3):
     if current_os == 'Linux':
         linux_notify(title, text, icon_path, duration * 1000)
-    # elif current_os == 'Darwin':
-    #     apple_notify(title, text)
+    elif current_os == 'Darwin':
+        apple_notify(title, text)
     elif current_os == 'Windows':
-         windows_notify(title, text, icon_path, duration)
-    else:
-        from plyer.facades import Notification
-        Notification().notify(title, text, 'spotify-helper', app_icon=icon_path, timeout=duration)
+        windows_notify(title, text, icon_path, duration)
 
 
 def send_notif_with_web_image(title, text, image_url, timeout=2):
