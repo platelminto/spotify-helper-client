@@ -8,6 +8,6 @@ pystray==0.15.0
 pywin32==227
 requests==2.23.0
 six==1.14.0
-urllib3==1.25.8
+urllib3==1.26.5
 uuid==1.30
 win10toast==0.9
