@@ -1,7 +1,7 @@
 certifi==2020.4.5.1
 chardet==3.0.4
 idna==2.9
-Pillow==7.1.1
+Pillow==9.0.0
 pycairo==1.19.1
 PyGObject==3.36.0
 pynput==1.6.8
